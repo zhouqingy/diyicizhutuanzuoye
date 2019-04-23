@@ -1,0 +1,139 @@
+#include <iostream>
+using namespace std;
+#define MAX 30
+typedef struct _EdgeNode
+{	
+    int adjvex;
+    int weight;
+    struct _EdgeNode *next;
+}EdgeNode;
+typedef struct
+{
+    char vertex;
+    EdgeNode *firstedge;
+}VertexNode;
+typedef struct
+{
+    VertexNode adjList[MAX];
+    int vexNum,edgeNum;
+}Graphic;
+typedef struct
+{
+    int v1,v2;
+    int weight;
+}Enode;
+int Find(Graphic *G,char x)
+{
+    int i;
+    for(i=0;i<G->vexNum;i++)
+        if(G->adjList[i].vertex==x)
+        break;
+    return i;
+}
+void Create(Graphic *G,Enode edgeList[])
+{
+    int i,j,k,w;
+    char a,b;
+    EdgeNode *s;
+    cout<<"请输入顶点数和边数（顶点数 边数）：";
+    cin>>G->vexNum>>G->edgeNum;
+    cout<<"请输入无向图的"<<G->vexNum<<"个顶点（顶点为字符，依次输入或回车分隔）：";
+    for(i=0;i<G->vexNum;i++){
+        cin>>G->adjList[i].vertex;
+        G->adjList[i].firstedge=NULL;
+    }
+    for(k=0;k<G->edgeNum;k++){
+        cout<<"请输入无向图的第"<<k+1<<"条边（vi vj 权值）：";
+        cin>>a>>b>>w;
+        i=Find(G,a);
+        j=Find(G,b);
+        s=new EdgeNode;
+        s->adjvex=j;
+        s->weight=w;
+        s->next=G->adjList[i].firstedge;
+        G->adjList[i].firstedge=s;
+        s=new EdgeNode;
+        s->adjvex=i;
+        s->weight=w;
+        s->next=G->adjList[j].firstedge;
+        G->adjList[j].firstedge=s;
+        edgeList[k].v1=i;
+        edgeList[k].v2=j;
+        edgeList[k].weight=w;
+    }
+}
+void ShowadjList(Graphic *G)
+{
+    int i;
+    EdgeNode *p;
+    if(G->vexNum>0){
+        cout<<"该无向图的邻接表存储结构为："<<endl;
+        for(i=0;i<G->vexNum;i++){
+            p=G->adjList[i].firstedge;
+            cout<<i<<" "<<G->adjList[i].vertex<<":";
+            for(p=G->adjList[i].firstedge;p!=NULL;p=p->next)
+                cout<<G->adjList[i].vertex<<"--"<<G->adjList[p->adjvex].vertex<<",权值为"<<p->weight<<endl;
+            cout<<endl;
+        }
+    }
+    else{
+        cout<<"无向网尚未输入，请先输入无向网后再求其最小生成树！\n"<<endl;
+    }
+}
+void sort(Enode edgeList[],int edgeNum)
+{
+    int i,j;
+    Enode tmp;
+    for(i=0;i<edgeNum;i++){
+        for(j=0;j<edgeNum-i-1;j++){
+            if(edgeList[j].weight>edgeList[j+1].weight){
+                tmp=edgeList[j];
+                edgeList[j]=edgeList[j+1];
+                edgeList[j+1]=tmp;
+            }
+        }
+    }
+}
+void Kruskal(Graphic *G,Enode edgeList[])
+{
+    int vexNo[MAX];
+    int i=0,j=0,k=0;
+    int s1,s2;
+    Enode TE[MAX];
+    if(G->vexNum==1){
+        cout<<"网中只有一个顶点"<<G->adjList[0].vertex<<"，最小生成树即为该顶点！"<<endl;
+        return;
+    }
+    else if(G->vexNum>1){
+        for(i=0;i<G->vexNum;i++)
+            vexNo[i]=i;
+        sort(edgeList,G->edgeNum);
+        cout<<"最小生成树为："<<endl;
+        while(k<G->vexNum-1){
+            s1=vexNo[edgeList[j].v1];
+            s2=vexNo[edgeList[j].v2];
+            if(s1!=s2){
+                TE[k].v1=edgeList[j].v1;
+                TE[k].v2=edgeList[j].v2;
+                cout<<"第"<<k+1<<"条边：";
+                cout<<"("<<G->adjList[TE[k].v1].vertex<<","
+                    <<G->adjList[TE[k].v2].vertex<<")"<<"该边权值为：";
+                cout<<edgeList[j].weight<<endl;
+                for(i=0;i<G->vexNum;i++)
+                    if(vexNo[i]==s2)
+                        vexNo[i]=s1;
+                k++;
+            }
+            j++;
+        }
+        cout<<endl;
+    }
+    else
+        cout<<"无向网尚未输入，请先输入无向网后再求其最小生成树！\n"<<endl;
+}
+void menu()
+{
+    cout<<"\t\t********用Kruskal算法求最小生成树*******\n";
+    cout<<"\t\t*         1.输入一个无向图             *\n";
+    cout<<"\t\t*         2.图的邻接表表示             *\n";
+    cout<<"\t\t*         3.构造最小生成树  
